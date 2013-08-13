@@ -16,6 +16,24 @@ __license__ = 'MIT'
 
 import subprocess, ifsetup, distro, time, json
 
+def compute_signal(astr):
+	"""We can either have x/y or dBm value for signal quality.
+	Figure out which one it is, then return a percentage value as a string"""
+	if astr.find('dBm') > 0:
+		dbmval = astr.split('dBm')[0]	# Grab the front part of the string
+		print dbmval
+		quality = 2 * (int(dbmval) + 100)	# Convert to percent
+		if quality > 100:
+			quality = 100
+	else:
+		rparts = astr.split('/')
+		f1 = float(rparts[0])
+		f2 = float(rparts[1])
+		q = 0.0
+		q = (f1 / f2) * 100
+		quality = int(q)
+	return str(quality)
+
 def scan_parse():
 	"""scan_parse should be able to handle any format for the iwlist output data"""
 	scanstr = """sudo iwlist %s scanning""" %  (ifsetup.name,)
@@ -53,8 +71,7 @@ def scan_parse():
 					entry_method.append(newmethod[1:])
 
 			if ln.find('Signal level=') != -1:
-				entry_signal = ln.split('Signal level=')[1]
-				#entry_signal = netlevel.split(' ')[0]
+				entry_signal = compute_signal(ln.split('Signal level=')[1])
 
 		# Only add real entries
 		if len(entry_ssid) > 0:
