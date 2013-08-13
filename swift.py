@@ -16,7 +16,7 @@ __license__ = 'MIT'
 
 import json
 from bottle import Bottle, run, static_file, post, request
-import ssid
+import scan as scanner
 
 app = Bottle()
 
@@ -34,8 +34,8 @@ class Swift():
 		@self.app.get('/iotas/swift/scan')
 		def scan():
 			"""Scan the networks, return in a list of JSON tuples (network name, encryption status)"""
-			scan_data = ssid.new_scan()
-			return scan_data
+			scan_data = scanner.scan_parse()
+			return json.dumps(scan_data)
 
 		@self.app.put('/iotas/swift/join')
 		def join():

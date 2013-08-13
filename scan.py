@@ -60,7 +60,7 @@ def scan_parse():
 		if len(entry_ssid) > 0:
 			retlist.append({ "ssid": entry_ssid, "mode": entry_mode, "encryption": entry_encryption, "method": entry_method, "signal": entry_signal })
 
-	return retlist
+	return {"scan": retlist }
 
 if __name__ == '__main__':
     result = scan_parse()
