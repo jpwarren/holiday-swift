@@ -25,12 +25,26 @@ def new_scan():
 	for ln in scanlist:
 		if ln.find('ESSID:') != -1:
 			netname = ln.split('ESSID:')[1]
+			netmethod = []
 			#print netname[1:-1]
+		if ln.find('Mode:') != -1:
+			netmode = ln.split('Mode:')[1]
 		if ln.find('Encryption key:') != -1:
 			netsec = ln.split('Encryption key:')[1]
 			#print netsec
-			retlist.append((netname[1:-1],netsec))
-	return json.dumps(retlist)
+		if ln.find('IE:') != -1:
+			newmethod = ln.split('IE:')[1]
+			#print "newmethod %s" % newmethod[1:]
+			if newmethod.find('Unknown:') == -1:
+				#print "appending"
+				netmethod.append(newmethod[1:])
+		if ln.find('Signal level=') != -1:
+			netlevel = ln.split('Signal level=')[1]
+			netlevel = netlevel.split(' ')[0]
+			entry = { "ssid": netname[1:-1], "mode": netmode, "encryption": netsec, "method": netmethod, "signal": netlevel }
+			retlist.append(entry)
+
+	return json.dumps({"scan": retlist})
 
 def scan():
 	"""scan() will perform a scan of the wireless interface and return a list of the visible networks"""
