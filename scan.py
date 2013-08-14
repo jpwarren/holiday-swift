@@ -21,7 +21,7 @@ def compute_signal(astr):
 	Figure out which one it is, then return a percentage value as a string"""
 	if astr.find('dBm') > 0:
 		dbmval = astr.split('dBm')[0]	# Grab the front part of the string
-		print dbmval
+		#print dbmval
 		quality = 2 * (int(dbmval) + 100)	# Convert to percent
 		if quality > 100:
 			quality = 100
