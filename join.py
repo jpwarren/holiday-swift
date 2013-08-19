@@ -93,23 +93,23 @@ key_mgmt=NONE
     result = subprocess.check_output(["sudo","wpa_cli","reconfigure"])
     #result = subprocess.check_output(["sudo","wpa_cli","reconfigure"])
 
-    # kill dhcpcd, then restart it (DHCP only)
+    # tell dhcp to rebind address (DHCP only)
     try:
-        dhcpkill = subprocess.check_output(["sudo", "killall", "dhcpcd"])
+        dhcpkill = subprocess.check_output(["sudo", "dhcpcd", "-n", "-t 30"])
     except:
-        print "Maybe dhcpcd isn't running"
+        print "Lease renwal failed?"
     time.sleep(3)   # Just to let things simmer down a bit
-    dhcpcdstart = subprocess.check_output(["sudo", "dhcpcd", ifsetup.name])
+    #dhcpcdstart = subprocess.check_output(["sudo", "dhcpcd", ifsetup.name])
 
     return result
 
 if __name__ == '__main__':
     while True:
-        print "joining Terazzo Vecchio..."
-        join('Terazzo Vecchio', 'DelNuovo')
-        print "Joined."
-        time.sleep(120)
         print "joining Moores4G"
         join('Moores4G', '10634791')
+        print "Joined."
+        time.sleep(120)
+        print "joining EngineRoom..."
+        join('EngineRoom', 'shared!!secret')
         print "Joined."
         time.sleep(120)
