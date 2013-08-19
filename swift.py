@@ -17,6 +17,7 @@ __license__ = 'MIT'
 import json
 from bottle import Bottle, request
 import scan as scanner
+import join as joiner
 
 def setup_routes(theApp):
 	"""Establish the routes for SWIFT"""
@@ -58,8 +59,8 @@ def setup_routes(theApp):
 			return json.dumps({"success": False})
 
 		# And here we should be able to join the network maybe
-		print "Joining %s" % ssid_value
-		#ssid.join(ssid_value,password)
+		print "Joining %s..." % ssid_value
+		joiner.join(ssid_value,passwd)
 		return json.dumps({"success": True})
 
 class Swift():
