@@ -98,8 +98,13 @@ key_mgmt=NONE
         dhcpkill = subprocess.check_output(["sudo", "dhcpcd", "-n", "-t 30"])
     except:
         print "Lease renwal failed?"
-    time.sleep(3)   # Just to let things simmer down a bit
-    #dhcpcdstart = subprocess.check_output(["sudo", "dhcpcd", ifsetup.name])
+    
+    # Suspect restarting the avahi-daemon may also be necessary so it rebinds correctly...
+    try:
+        avahihup = subprocess.check_output(["sudo", "avahi-daemon", "-r"])
+    except:
+        print "Failed to restart avahi-daemon?"       
+    time.sleep(5)   # Just to let things simmer down a bit
 
     return result
 
