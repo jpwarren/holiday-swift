@@ -84,6 +84,9 @@ key_mgmt=NONE
 """
     wpa_supplicant_text = wpa_supplicant_base + wpa_supplicant_network + wpa_supplicant_network_rest
 
+    # backup the wpa_supplicant.conf file unless we're foolish and ignorant
+    result = subprocess.check_output(['sudo', 'cp', '/etc/wpa_supplicant/wpa_supplicant.conf', '/etc/wpa_supplicant/wpa_supplicant.conf.LAST'])
+
     # Ok go and overwrite the wpa_supplicant.conf file (do we need privleges for this?)
     f = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
     f.write(wpa_supplicant_text)
@@ -104,9 +107,67 @@ key_mgmt=NONE
         avahihup = subprocess.check_output(["sudo", "avahi-daemon", "-r"])
     except:
         print "Failed to restart avahi-daemon?"       
-    time.sleep(5)   # Just to let things simmer down a bit
+  
+    # We wait for 15 seconds, at the end of which, we can test to see if we've joined.
+    print "Waiting 15 seconds for networking to stabilize..."
+    time.sleep(15)   # Just to let things simmer down a bit
 
-    return result
+    # To test, we use 'route -n | grep <interface>', which returns nothing if we're not connected.
+    #test_cmd = """route -n | grep %s""" % ifsetup.name
+    t1 = subprocess.Popen(['route', '-n'], stdout=subprocess.PIPE)
+    try:
+        t2 = subprocess.check_output(['grep', ifsetup.name ], stdin=t1.stdout)
+        join_success = True
+    except subprocess.CalledProcessError:
+        join_success = False
+    t1.stdout.close()
+
+    #tester = subprocess.check_output([test_cmd, ], shell=True)
+
+    # And if the join was not successful, go back to how things were, eh?
+    if join_success == True:
+        print "JOIN SUCCESSFUL"
+        return True
+    else:
+        print "JOIN FAILED, ATTEMPTING TO RESTORE PREVIOIUS CONNECTION..."
+
+        # restore the wpa_supplicant.conf file unless we're foolish and ignorant
+        result = subprocess.check_output(['sudo', 'cp', '/etc/wpa_supplicant/wpa_supplicant.conf.LAST', '/etc/wpa_supplicant/wpa_supplicant.conf'])
+
+        # Restart the wpa_supplicant process - somehow?
+        result = subprocess.check_output(["sudo","wpa_cli","reconfigure"])
+
+        # tell dhcp to rebind address (DHCP only)
+        try:
+            dhcpkill = subprocess.check_output(["sudo", "dhcpcd", "-n", "-t 30"])
+        except:
+            print "Lease renwal failed?"
+        
+        # Suspect restarting the avahi-daemon may also be necessary so it rebinds correctly...
+        try:
+            avahihup = subprocess.check_output(["sudo", "avahi-daemon", "-r"])
+        except:
+            print "Failed to restart avahi-daemon?"       
+      
+        # We wait for 15 seconds, at the end of which, we can test to see if we've joined.
+        time.sleep(15)   # Just to let things simmer down a bit
+
+        # To test, we use 'route -n | grep <interface>', which returns nothing if we're not connected.
+        #test_cmd = """route -n | grep %s""" % ifsetup.name
+        t1 = subprocess.Popen(['route', '-n'], stdout=subprocess.PIPE)
+        try:
+            t2 = subprocess.check_output(['grep', ifsetup.name ], stdin=t1.stdout)
+            join_success = True
+        except subprocess.CalledProcessError:
+            join_success = False
+        t1.stdout.close()
+
+        # And if the join was not successful, ooops.
+        if join_success == True:
+            print "JOIN FAILED, ORIGINAL NETWORK RESTORED"
+        else:
+            print "JOIN FAILED, RESTORE FAILED, WELL AND TRULY STUFFED!!!"
+        return False
 
 if __name__ == '__main__':
     while True:
