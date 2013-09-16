@@ -47,7 +47,6 @@ iface wlan inet dhcp
     result = subprocess.check_output(["sudo", "service", "networking", "--full-restart"])
     return result   
 
-
 def join(ssid, password=''):
     """join will attempt to join wifi network SSID using the given credential
     These are done on separate threads so the web server doesn't time out on us.
@@ -64,6 +63,24 @@ def join(ssid, password=''):
         return result
 
 def join_arch(ssid, password):
+	"""Join an Arch Linux (Holiday) wireless network"""
+	
+	# Now that we have a smanzy script to do all the heavy lifting, let's try it out.
+	try:
+		c = subprocess.check_output(['/home/holiday/ap/join.sh', ssid, password ])
+	except subprocess.CalledProcessError:
+		# We've failed to join the wireless network, let's try to fall back to the original.
+		try:
+			c1 = subprocess.check_output(['/home/holiday/ap/rejoin.sh'])
+		except subprocess.CalledProcessError:
+			# We couldn't even rejoin the old network, go into AP mode...
+			try:
+				c2 = subprocess.check_output(['/home/holiday/ap/ap-on.sh'])
+			except:
+				print "FATAL ERROR COULD NOT ESTABLISH ACCESS POINT!"
+	return
+
+def old_join_arch(ssid, password):
     """Join an Arch Linux (Holiday) wireless network"""
 
     wpa_supplicant_base = """ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=wheel
