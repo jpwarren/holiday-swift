@@ -70,13 +70,15 @@ def join_arch(ssid, password):
 		c = subprocess.check_output(['/home/holiday/ap/join.sh', ssid, password ])
 	except subprocess.CalledProcessError:
 		# We've failed to join the wireless network, let's try to fall back to the original.
+		print "Failed to join network, rejoining old network..."
 		try:
 			c1 = subprocess.check_output(['/home/holiday/ap/rejoin.sh'])
 		except subprocess.CalledProcessError:
 			# We couldn't even rejoin the old network, go into AP mode...
+			print "Failed to rejoin old network, setting up AP..."
 			try:
-				c2 = subprocess.check_output(['/home/holiday/ap/ap-on.sh'])
-			except:
+				c2 = subprocess.check_output(['/home/holiday/ap/ap-on.sh'], shell=True)
+			except subprocess.CalledProcessError:
 				print "FATAL ERROR COULD NOT ESTABLISH ACCESS POINT!"
 	return
 
